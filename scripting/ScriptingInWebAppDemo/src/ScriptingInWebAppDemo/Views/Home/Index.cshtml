@@ -1,0 +1,57 @@
+﻿<h1 id="overview" class="page-header">C# Scripting</h1>
+<div class="row">
+    <div class="col-md-12">
+        <div data-bind="attr: {'class': error() ? 'bs-callout bs-callout-danger' : 'bs-callout' }, visible: result() != ''">
+            <pre data-bind="text: result"></pre>
+        </div>
+        <form role="form">
+            <div class="form-group">
+                <label>Code</label>
+                <textarea class="form-control" rows="6" data-bind="value: code"></textarea>
+            </div>
+            <button type="button" class="btn btn-default" data-bind="click: submitCode">Submit</button>
+        </form>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+         var Scripting = function() {
+             var self = this;
+
+             self.code = ko.observable();
+             self.result = ko.observable("");
+             self.error = ko.observable(false);
+
+             self.submitCode = function() {
+                 self.result("");
+
+                 $.ajax("/api/script", {
+                     type: "POST",
+                     contentType: "application/json",
+                     data: JSON.stringify({
+                         Code: self.code()
+                     })
+                 }).success(function(data) {
+                     self.error(false);
+                     if (data == null) data = "Your code returned no result";
+                     if (data.error != null) {
+                         self.result(data.error);
+                         self.error(true);
+                         return;
+                     }
+
+                     self.result(data);
+                 }).fail(function() {
+                     self.error(true);
+                 });
+             };
+         };
+
+         var vm;
+         $(function() {
+             vm = new Scripting();
+             ko.applyBindings(vm);
+         });
+    </script>
+}
