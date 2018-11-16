@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace RuntimeControllers
@@ -18,10 +19,10 @@ namespace RuntimeControllers
         private readonly ApplicationPartManager _applicationPartManager;
         private readonly ILogger<ApplicationPartWatcher> _logger;
 
-        public ApplicationPartWatcher(OnDemandActionDescriptorChangeProvider onDemandActionDescriptorChangeProvider, 
+        public ApplicationPartWatcher(IActionDescriptorChangeProvider onDemandActionDescriptorChangeProvider, 
                 ApplicationPartManager applicationPartManager, ILoggerFactory loggerFactory)
         {
-            _onDemandActionDescriptorChangeProvider = onDemandActionDescriptorChangeProvider;
+            _onDemandActionDescriptorChangeProvider = (OnDemandActionDescriptorChangeProvider)onDemandActionDescriptorChangeProvider;
             _applicationPartManager = applicationPartManager;
             _logger = loggerFactory.CreateLogger<ApplicationPartWatcher>();
         }
