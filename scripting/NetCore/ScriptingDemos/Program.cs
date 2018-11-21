@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
@@ -8,7 +9,7 @@ namespace ScriptingDemos
 
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             while (true)
             {
@@ -22,16 +23,16 @@ namespace ScriptingDemos
                 switch (int.Parse(opt))
                 {
                     case 1:
-                        Run();
+                        await Run();
                         break;
                     case 2:
-                        RunWithHost();
+                        await RunWithHost();
                         break;
                     case 3:
-                        RunRepl();
+                        await RunRepl();
                         break;
                     case 4:
-                        RunScriptConfig();
+                        await RunScriptConfig();
                         break;
                     default:
                         Console.WriteLine("Invalid option.");
@@ -44,27 +45,27 @@ namespace ScriptingDemos
             }
         }
 
-        private static void Run()
+        private static async Task Run()
         {
             var code = File.ReadAllText(GetScriptTestFile("test1.csx"));
-            CSharpScript.RunAsync(code, ScriptOptions.Default).GetAwaiter().GetResult();
+            await CSharpScript.RunAsync(code);
         }
 
-        private static void RunWithHost()
+        private static async Task RunWithHost()
         {
             var code = File.ReadAllText(GetScriptTestFile("test2.csx"));
 
-            var result = CSharpScript.EvaluateAsync<int>(code, 
-                globals: new ScriptHost { Number = 5 }).GetAwaiter().GetResult();
+            var result = await CSharpScript.EvaluateAsync<int>(code,
+                globals: new ScriptHost { Number = 5 });
 
             //result is now 25
             Console.WriteLine(result);
         }
 
-        private static void RunScriptConfig()
+        private static async Task RunScriptConfig()
         {
-            var scriptConfig = new ScriptConfig(GetScriptTestFile("config.csx")).
-                Create<MyAppConfig>().Result;
+            var scriptConfig = await new ScriptConfig(GetScriptTestFile("config.csx")).
+                Create<MyAppConfig>();
 
             Console.WriteLine($"DataTarget: {scriptConfig.Target}");
             Console.WriteLine($"AppUrl: {scriptConfig.AppUrl}");
@@ -76,7 +77,7 @@ namespace ScriptingDemos
             return Path.Combine(AppContext.BaseDirectory, "Fixtures", filename);
         }
 
-        private static void RunRepl()
+        private static async Task RunRepl()
         {
             ScriptState<object> scriptState = null;
             while (true)
@@ -84,8 +85,8 @@ namespace ScriptingDemos
                 Console.Write("* ");
                 var input = Console.ReadLine();
                 scriptState = scriptState == null ?
-                    CSharpScript.RunAsync(input, ScriptOptions.Default.AddImports("System", "System.Console")).Result :
-                    scriptState.ContinueWithAsync(input).Result;
+                    await CSharpScript.RunAsync(input, ScriptOptions.Default.AddImports("System", "System.Console")) :
+                    await scriptState.ContinueWithAsync(input);
             }
         }
     }

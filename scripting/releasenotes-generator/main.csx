@@ -2,6 +2,7 @@
 #load "GitHubClientWrapper.csx"
 
 using Octokit;
+using Newtonsoft.Json;
 
 var repoNames = new[]
 {
